@@ -139,6 +139,35 @@ void node_print(link_head *head)
 	
 }
 
+int recursion_reversal(link_node *prev,link_node *now)
+{
+	if(prev == NULL || now == NULL)
+		return -1;
+	if(now->next == NULL){
+		now->next = prev;
+		return;
+	}
+	else
+	{
+		recursion_reversal(now,now->next);
+		now->next = prev;
+	}
+}
+
+
+int link_reversal(link_head *head)
+{
+	if(head==NULL || head->next==NULL || head->next->next==NULL)
+		return -1;
+	link_node *p;
+	for(p=head->next;p->next!=NULL;p=p->next);
+	recursion_reversal(head->next,head->next->next);
+	head->next->next = NULL;
+	head->next = p;	
+	return 0;
+}
+
+
 int main()
 {
 	data_t data1 = {"wyw"};
@@ -151,6 +180,19 @@ int main()
 	link_insert_tail(head,node1);
 	link_insert_head(head,node2);
 	link_insert(head,node2,node3);
+	data_t data4 = {"wyw111"};
+	data_t data5 = {"huangnan111"};
+	data_t data6 = {"love111"};
+	link_node *node4 = node_create(data4);
+	link_node *node5 = node_create(data5);
+	link_node *node6 = node_create(data6);
+	link_insert_tail(head,node4);
+	link_insert_head(head,node5);
+	link_insert(head,node1,node6);
+	
+	node_print(head);
+	link_reversal(head);
+
 	node_print(head);
 	link_destroy(head);
 }

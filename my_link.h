@@ -31,6 +31,7 @@ link_node *link_select(link_head *head,const data_t data);
 int link_delect(link_head *head,link_node *pnode);
 int link_destroy(link_head *head);
 void link_print(link_head*);
-
+int link_isset(link_head *,link_node *);
+int link_reversal(link_head *);
 
 #endif
