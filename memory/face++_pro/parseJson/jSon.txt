@@ -1,0 +1,73 @@
+{
+    "face": [
+        {
+            "attribute": {
+                "age": {
+                    "range": 5, 
+                    "value": 10
+                }, 
+                "gender": {
+                    "confidence": 99.9837, 
+                    "value": "Male"
+                }, 
+                "glass": {
+                    "confidence": 99.8336, 
+                    "value": "Normal"
+                }, 
+                "pose": {
+                    "pitch_angle": {
+                        "value": -0.020992
+                    }, 
+                    "roll_angle": {
+                        "value": -2.65314
+                    }, 
+                    "yaw_angle": {
+                        "value": -12.168801
+                    }
+                }, 
+                "race": {
+                    "confidence": 87.5344, 
+                    "value": "White"
+                }, 
+                "smiling": {
+                    "value": 1.43677
+                }
+            }, 
+            "face_id": "b09d8b12699817f85d2dd67dd648da24", 
+            "position": {
+                "center": {
+                    "x": 59.895833, 
+                    "y": 28.985507
+                }, 
+                "eye_left": {
+                    "x": 47.63224, 
+                    "y": 18.86
+                }, 
+                "eye_right": {
+                    "x": 69.307812, 
+                    "y": 17.928357
+                }, 
+                "height": 47.342995, 
+                "mouth_left": {
+                    "x": 50.07, 
+                    "y": 40.863816
+                }, 
+                "mouth_right": {
+                    "x": 67.130729, 
+                    "y": 41.631981
+                }, 
+                "nose": {
+                    "x": 55.190104, 
+                    "y": 29.932415
+                }, 
+                "width": 51.041667
+            }, 
+            "tag": ""
+        }
+    ], 
+    "img_height": 207, 
+    "img_id": "52088712c8406bdceb7764c5dc38f985", 
+    "img_width": 192, 
+    "session_id": "28343b29b3874892998af53c5a78bf18", 
+    "url": null
+}

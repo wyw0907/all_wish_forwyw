@@ -1,0 +1,6 @@
+add_executable(test_asio_server test_asio_server.cpp)
+target_link_libraries(test_asio_server pthread dl)
+
+
+add_executable(test_asio_client test_asio_client.cpp)
+target_link_libraries(test_asio_client pthread dl)

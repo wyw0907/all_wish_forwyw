@@ -1,0 +1,6 @@
+[submodule "deps/asio"]
+	path = deps/asio
+	url = git@github.com:wyw0907/asio.git
+[submodule "deps/nanomsg"]
+	path = deps/nanomsg
+	url = git@github.com:wyw0907/nanomsg.git
