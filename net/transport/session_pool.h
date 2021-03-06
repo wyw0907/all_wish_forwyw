@@ -2,24 +2,40 @@
 #define WISH_SESSION_POOL_H
 #include <asio.hpp>
 #include <map>
-#include "detail/spin_lock.h"
+#include "../util/spin_lock.h"
+#include "session.h"
 namespace wish
 {
-    template <typename Session>
-    class session_pool
+    template <typename Session,
+              typename Matrix>
+    class session_pool : public std::enable_shared_from_this<session_pool<Session, Matrix> >, public Matrix
     {
     public:
         using SessionType = std::shared_ptr<Session>;
         session_pool()
+            : m_io_context(std::make_shared<asio::io_context>(2)),
+              m_ev_strand(*m_io_context)
         {
-            m_io_context = std::make_shared<asio::io_context>(2);
+        }
+
+        virtual ~session_pool()
+        {
+
         }
 
         void run()
         {
-            std::thread([this]() { 
-                this->m_io_context->run();
-            }).detach();
+            m_context = std::thread([this]() {
+                try
+                {
+                    this->m_io_context->run();
+                }
+                catch (const asio::error_code &ec)
+                {
+                    std::cout << "io error : " << ec.message() << std::endl;
+                    raise(ec.value());
+                }
+            });
         }
 
         void wait()
@@ -30,13 +46,18 @@ namespace wish
             cv.wait(lck);
         }
 
-        SessionType add_object()
+        SessionType create_object()
         {
             std::unique_lock<spin_lock> lck(m_lock);
             uint64_t id = m_sequence_id.load();
-            m_sequence_id ++;
+            m_sequence_id++;
             lck.unlock();
-            auto ss = std::make_shared<Session>(id, m_io_context);
+            return std::make_shared<Session>(id, m_io_context, this);
+        }
+
+        SessionType add_object()
+        {
+            auto ss = create_object();
             return add_object(ss) ? ss : nullptr;
         }
 
@@ -70,6 +91,18 @@ namespace wish
             }
         }
 
+        void clear()
+        {
+            std::lock_guard<spin_lock> lck(m_lock);
+            m_objects.clear();
+        }
+
+        size_t size()
+        {
+            std::lock_guard<spin_lock> lck(m_lock);
+            return m_objects.size();
+        }
+
         SessionType find(uint64_t id)
         {
             std::lock_guard<spin_lock> lck(m_lock);
@@ -83,11 +116,13 @@ namespace wish
 
     protected:
         std::shared_ptr<asio::io_context> m_io_context;
+        asio::io_context::strand m_ev_strand;
 
     private:
         std::atomic<uint64_t> m_sequence_id = 0;
         spin_lock m_lock;
         std::map<uint64_t, SessionType> m_objects;
+        std::thread m_context;
     };
 } // namespace wish
 #endif

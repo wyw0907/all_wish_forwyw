@@ -48,6 +48,7 @@ public:
         stop = true;
         std::unique_lock<std::mutex> lck(queue_mtx);
         condition.notify_all();
+        lck.unlock();
         worker.join();
     }
 

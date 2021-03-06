@@ -39,5 +39,5 @@ set (CMAKE_CXX_FLAGS "-std=c++17")
 
 add_subdirectory(core)
 add_subdirectory(test)
-#add_subdirectory(practice)
+add_subdirectory(practice)
 
