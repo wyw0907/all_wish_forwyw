@@ -37,8 +37,8 @@ namespace wish
                 {
                     ep = it->endpoint();
                     break;
-                }
-                std::cout << "connecting " << ep.address().to_string() << ":" << ep.port() << std::endl;              
+                }            
+                DLOG("connecting {} : {}", ep.address().to_string(), ep.port());
                 ss->socket().async_connect(ep, [this, ss](const asio::error_code &ec) {
                     if (ec)
                     {

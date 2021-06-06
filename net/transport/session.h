@@ -1,9 +1,6 @@
 #ifndef WISH_SESSION_H
 #define WISH_SESSION_H
 #include "matrix.h"
-#include <asio.hpp>
-#include <asio/ts/buffer.hpp>
-#include <asio/ts/internet.hpp>
 #include <iostream>
 namespace wish
 {

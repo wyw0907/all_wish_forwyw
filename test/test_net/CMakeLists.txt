@@ -1,9 +1,16 @@
 add_executable(test_tcp_client test_tcp_client.cpp)
-target_link_libraries(test_tcp_client pthread dl)
-
+target_link_libraries(test_tcp_client netlib)
 
 add_executable(test_tcp_server test_tcp_server.cpp)
-target_link_libraries(test_tcp_server pthread dl)
+target_link_libraries(test_tcp_server netlib)
 
 add_executable(test_easy_tcp_client test_easy_tcp_client.cpp)
-target_link_libraries(test_easy_tcp_client pthread dl)
+target_link_libraries(test_easy_tcp_client netlib)
+
+add_executable(test_http_message test_http_message.cpp)
+target_link_libraries(test_http_message netlib)
+add_executable(test_uri test_uri.cpp)
+target_link_libraries(test_uri netlib)
+
+add_executable(test_http_client test_http_client.cpp)
+target_link_libraries(test_http_client netlib)

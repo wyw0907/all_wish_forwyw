@@ -13,3 +13,5 @@ add_subdirectory(test_nanomsg)
 
 add_subdirectory(test_zmq)
 add_subdirectory(test_net)
+add_subdirectory(test_grpc)
+add_subdirectory(test_consul)

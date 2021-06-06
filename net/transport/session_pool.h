@@ -1,6 +1,5 @@
 #ifndef WISH_SESSION_POOL_H
 #define WISH_SESSION_POOL_H
-#include <asio.hpp>
 #include <map>
 #include "../util/spin_lock.h"
 #include "session.h"
@@ -20,7 +19,8 @@ namespace wish
 
         virtual ~session_pool()
         {
-
+            this->m_io_context->stop();
+            m_context.join();
         }
 
         void run()

@@ -1,0 +1,17 @@
+
+syntax = "proto3";
+package test;
+
+// The greeting service definition.
+service Greeter {
+  // Sends a greeting
+  rpc SayHello (EchoRequest) returns (EchoResponse) {}
+}
+
+message EchoRequest {
+  string name = 1;
+}
+
+message EchoResponse {
+  string message = 1;
+}

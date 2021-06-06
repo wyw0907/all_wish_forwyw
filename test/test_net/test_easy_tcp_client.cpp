@@ -5,11 +5,11 @@ int main()
 {
     wish::easy_tcp::client cli;
     cli.regist_recv_cb([] (const char *data, size_t size) {
-        std::cout << "recv_cb : " << std::string(data, size) << std::endl;
+        ILOG("recv_cb : {}", std::string(data, size).c_str());
     });
     if(!cli.sync_connect("127.0.0.1", 5050))
     {
-        std::cout << "connect fail" << std::endl;
+        FLOG("connect fail");
         cli.shutdown();
         return -1;
     }

@@ -1,5 +1,9 @@
 
 
+find_path(ZMQ_INCLUDE_PATH NAMES zmq.h)
+find_library(ZMQ_LIB NAMES libzmq.so PATHS /usr/local/lib/)
+
+
 add_executable(client_req client_req.cpp)
 target_link_libraries(client_req zmq)
 

@@ -31,13 +31,10 @@ if(BUILD_NN)
 add_subdirectory(deps/nanomsg)
 endif()
 
-find_path(ZMQ_INCLUDE_PATH NAMES zmq.h)
-find_package(ZMQ_LIB NAMES libzmq.so PATHS /usr/local/lib/)
-
-
 set (CMAKE_CXX_FLAGS "-std=c++17")
 
 add_subdirectory(core)
 add_subdirectory(test)
 add_subdirectory(practice)
+add_subdirectory(net)
 

@@ -52,7 +52,7 @@ public:
 int main()
 {
     client cli;
-    if(!cli.connect("127.0.0.1", 5050))
+    if(!cli.connect("127.0.0.1", 6666))
     {
         return 0;
     }
