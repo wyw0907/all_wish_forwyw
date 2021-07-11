@@ -5,6 +5,8 @@ aux_source_directory(./ core_srcs)
 aux_source_directory(./mq/ mq_srcs)
 aux_source_directory(./crypt crypt_srcs)
 aux_source_directory(./time time_srcs)
+aux_source_directory(./threadpool threadpool_srcs)
+aux_source_directory(./log log_srcs)
 
 
 add_library(wish STATIC 
@@ -12,7 +14,9 @@ add_library(wish STATIC
     ${mq_srcs}
     ${crypt_srcs}
     ${time_srcs}
+    ${threadpool_srcs}
+    ${log_srcs}
 )
 
-target_link_libraries(wish nanomsg ssl pthread dl)
+target_link_libraries(wish nanomsg pthread dl)
 

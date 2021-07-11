@@ -4,7 +4,7 @@
 #ifndef WISH_SOCKET_NN_H
 #define WISH_SOCKET_NN_H
 #include "core/common.h"
-#include "core/log.h"
+#include "core/log/log.h"
 #include "nanomsg/src/nn.h"
 #include "nanomsg/src/ipc.h"
 #include "nanomsg/src/reqrep.h"

@@ -1,7 +1,7 @@
 #ifndef WISH_COMMON_H
 #define WISH_COMMON_H
 
-#if defined (__LINUX__) || defined (__GNUC__)
+#if defined (__LINUX__) 
 #define _LINUX
 #endif
 

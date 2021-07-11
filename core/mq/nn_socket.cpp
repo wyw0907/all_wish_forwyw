@@ -44,7 +44,7 @@ namespace wish {
                 case EAGAIN:
                     break;
                 case EINTR:
-                    LOG_WRN("interrupted when receiveng from %s", m_url);
+                    LOG_WRN("interrupted when receiveng from %s", m_url.c_str());
                     break;          
                 default:
                     on_error("nn_recv");

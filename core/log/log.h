@@ -1,7 +1,8 @@
 #ifndef WISH_LOG_H
 #define WISH_LOG_H
-#include "core/common.h"
-#include "time/time.h"
+#include <string>
+#include <time.h>
+#include "../common.h"
 namespace wish
 {
 class logger
@@ -41,7 +42,11 @@ protected:
     template <class L, class S>
     void log(S &&content)
     {
-        fprintf(stdout, "%s[%s][%s] %s\033[0m\n", L::color, time_util::current_time().c_str(), L::name, content.c_str());
+        timespec tt;
+        clock_gettime(CLOCK_REALTIME, &tt);
+        char sz_time[32] = {0};
+        strftime(sz_time, 20, "%Y-%m-%d %H:%M:%S", localtime(&tt.tv_sec));
+        fprintf(stdout, "%s[%s.%ld][%s] %s\033[0m\n", L::color, sz_time, tt.tv_nsec / 1000'000, L::name, content.c_str());
     }
 };
 

@@ -13,5 +13,10 @@ add_subdirectory(test_nanomsg)
 
 add_subdirectory(test_zmq)
 add_subdirectory(test_net)
+
+find_library(GRPC_LIB NAMES grpc)
+message ('${GRPC_LIB}')
+if ( ${GRPC_LIB})
 add_subdirectory(test_grpc)
 add_subdirectory(test_consul)
+endif()
