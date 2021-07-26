@@ -15,6 +15,8 @@ set (PYTHON_OUTPUT_PATH ${OUTPUT_PATH}/python/)
 set (LIBRARY_OUTPUT_PATH ${OUTPUT_PATH}/lib/)
 set (EXECUTABLE_OUTPUT_PATH  ${OUTPUT_PATH}/bin/)
 
+include_directories("/usr/local/include")
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps/asio/asio/include/)
 #include_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps/pybind11/include/)
@@ -25,6 +27,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps)
 #include_directories(${PYTHON_INCLUDE_PATH})
 
 link_directories(${LIBRARY_OUTPUT_PATH})
+link_directories("/usr/local/lib")
 
 #find_package(PythonInterp 3)
 #find_package(PythonLibs 3)
