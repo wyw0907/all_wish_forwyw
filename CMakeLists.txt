@@ -39,7 +39,7 @@ if(BUILD_NN)
 add_subdirectory(deps/nanomsg)
 endif()
 
-set (CMAKE_CXX_FLAGS "-std=c++17 -O2 -g")
+set (CMAKE_CXX_FLAGS "-std=c++17 -O2 -g -fsanitize=address")
 
 add_subdirectory(core)
 add_subdirectory(test)

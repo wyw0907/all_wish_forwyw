@@ -37,7 +37,7 @@ struct MemTest
 };
 int main()
 {
-    auto lockfree_tp = wish::lockfree_queue<std::string, 0, true>();
+    auto lockfree_tp = wish::lockfree_queue<std::string, 0>();
     lockfree_tp.emplace(test_case);
     std::string x;
     while(lockfree_tp.pop_front(x))
@@ -62,12 +62,12 @@ int main()
     MemTest y;
     while(lockfree_tp2.pop_front(y))
     {
-        std::cout << "consume:" << y.buf << " left:" << lockfree_tp2.size() << std::endl;
+        //std::cout << "consume:" << y.buf << " left:" << lockfree_tp2.size() << std::endl;
     }
 
      
     {
-            auto lockfree_tp = wish::lockfree_queue<std::string, 1024, false>();
+            auto lockfree_tp = wish::lockfree_queue<std::string>();
         auto clk = std::chrono::steady_clock::now();
         for (size_t i = 0; i < CASE_SIZE; ++i)
         {
@@ -132,7 +132,7 @@ int main()
         auto tp = std::queue<MemTest>();
         std::mutex mtx;
         std::condition_variable cond;
-        auto clk = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+        auto clk = std::chrono::steady_clock::now() + std::chrono::seconds(1);
         // 8核， 8写一读
         auto r = std::thread([&tp, &clk, &mtx, &cond] () {
             size_t cnt = 0;
@@ -176,8 +176,8 @@ int main()
     }
     {
         wish::event ev;
-        auto tp = wish::lockfree_queue<MemTest>();
-        auto clk = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+        auto tp = wish::lockfree_queue<MemTest, 1024>();
+        auto clk = std::chrono::steady_clock::now() + std::chrono::seconds(1);
         // 8核， 8写一读
         auto r = std::thread([&tp, &clk, &ev] () {
             size_t cnt = 0;
@@ -210,6 +210,7 @@ int main()
                 std::this_thread::sleep_until(clk);
                 for (size_t i = 0; i < CASE_SIZE; ++i)
                 {
+                    std::this_thread::sleep_for(std::chrono::microseconds(1));
                     tp.emplace(MemTest());
                     ev.set();
                 }
@@ -220,7 +221,7 @@ int main()
     {
         
         auto tp = moodycamel::BlockingConcurrentQueue<MemTest>();
-        auto clk = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+        auto clk = std::chrono::steady_clock::now() + std::chrono::seconds(1);
         // 8核， 8写一读
         auto r = std::thread([&tp, &clk] () {
             size_t cnt = 0;

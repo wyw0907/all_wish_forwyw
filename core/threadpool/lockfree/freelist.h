@@ -8,14 +8,14 @@
 namespace wish
 {
 
-template<class T, bool Compression, size_t PoolSize, class Alloca = std::allocator<T>>
+template<class T, size_t PoolSize, class Alloca = std::allocator<T>>
 class freelist : Alloca
 {
     struct node
     {
-        tagged_ptr<node, Compression> next;
+        tagged_ptr<node> next;
     };
-    using tagged_node_ptr = tagged_ptr<node, Compression>;
+    using tagged_node_ptr = tagged_ptr<node>;
     using atomic_tagged_node_ptr = std::atomic<tagged_node_ptr>;
 public:
     freelist() :
@@ -41,7 +41,7 @@ public:
 
     void destruct(T* t)
     {
-        t->~T();
+        //t->~T(); 函数对象析构线程不安全
         deallocate_safe(t);
     }
 private:
@@ -84,23 +84,5 @@ private:
 
     atomic_tagged_node_ptr m_pool;
 };
-template<class T, bool Compression>
-class freelist<T, Compression, 0, std::allocator<T>>
-{
-public:
-    freelist()
-    {
-    }
-    template <class... Args>
-    T *construct(Args&&... args)
-    {
-        return new T(std::forward<Args>(args)...);
-    }
-    void destruct(T* t)
-    {
-        delete t;
-    }
-};
-
 }
 #endif

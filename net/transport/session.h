@@ -85,7 +85,7 @@ namespace wish
     private:
         void do_send_msg(asio::const_buffer &&sending_buf)
         {
-            asio::async_write(m_socket, sending_buf,
+            asio::async_write(m_socket, sending_buf, asio::transfer_exactly(10),
                               [this](std::error_code ec, std::size_t length) {
                                   if (ec)
                                   {

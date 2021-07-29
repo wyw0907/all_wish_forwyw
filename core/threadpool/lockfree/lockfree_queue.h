@@ -9,25 +9,26 @@
 namespace wish
 {
 
-template<class T, size_t PoolSize = 1024, bool Compression = false>
+template<class T, size_t PoolSize = 1024>
 class lockfree_queue
 {
 public:
     using value_type = T;
     struct node
     {
+        using value_type = T;
         template <class U>
-        node(tagged_ptr<node, Compression> ptr, U&& u) : next(ptr), data(std::forward<U>(u))
+        node(tagged_ptr<node> ptr, U&& u) : next(ptr), data(std::forward<U>(u))
         {
         }
-        node(tagged_ptr<node, Compression> ptr): next(ptr)
+        node(tagged_ptr<node> ptr): next(ptr)
         {
         }
 
-        std::atomic<tagged_ptr<node, Compression>> next;
+        std::atomic<tagged_ptr<node>> next;
         value_type                    data; 
     };
-    using tagged_node_ptr = tagged_ptr<node, Compression>;
+    using tagged_node_ptr = tagged_ptr<node>;
     using atomic_tagged_node_ptr = std::atomic<tagged_node_ptr>;
 public:
     lockfree_queue() : 
@@ -77,11 +78,12 @@ public:
                 }
 
                 // 首节点不存数据，恒为空，每次消费次节点，然后把次节点挂在首节点位置
-                value_type *data = &next->data;
+                //value_type *data = &next->data;
+                ret = next->data;
                 tagged_node_ptr new_head(next.get_ptr(), head.get_next_tag());
                 if (m_head.compare_exchange_weak(head, new_head, std::memory_order_acq_rel))
                 {
-                    ret = std::move(*data);
+                    //ret = std::move(*data);
                     m_pool.destruct(head.get_ptr());
                     m_size.fetch_sub(1ul, std::memory_order_relaxed);
                     return true;
@@ -125,7 +127,8 @@ public:
             }
         }
     }
-    template <class U, typename = typename std::enable_if_t<std::is_same_v<value_type, std::decay_t<U>>>>
+
+    template <class U> //, typename = typename std::enable_if_t<std::is_function_v<value_type> || std::is_same_v<value_type, std::decay_t<U>>>>
     bool emplace(U&& item)
     {
         auto _node = m_pool.construct(tagged_node_ptr(nullptr, 0), std::forward<U>(item));
@@ -143,14 +146,16 @@ public:
 
     bool empty() const
     {
-        return m_head.load(std::memory_order_relaxed) == m_tail.load(std::memory_order_relaxed);
+        auto head = m_head.load(std::memory_order_relaxed);
+        auto tail =  m_tail.load(std::memory_order_relaxed);
+        return head == tail;
     }
 
 private:
     atomic_tagged_node_ptr m_head;
     atomic_tagged_node_ptr m_tail;
     std::atomic<size_t>    m_size;
-    freelist<node, Compression, PoolSize>    m_pool;
+    freelist<node, PoolSize>    m_pool;
 };
 
 }
