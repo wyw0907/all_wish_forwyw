@@ -8,7 +8,6 @@
 #include <chrono>
 #include <map>
 #include <atomic>
-#include "event.h"
 #include "lockfree/lockfree_queue.h"
 #include "concurrentqueue/blockingconcurrentqueue.h"
 using namespace std::chrono_literals;
@@ -327,7 +326,7 @@ public:
         {
             throw std::logic_error("empty queue");
         }
-        return m_sorted_queue.begin()->second;
+        return *(m_sorted_queue.begin()->second.begin());
     }
     const value_type& top() const
     {
@@ -335,21 +334,27 @@ public:
         {
             throw std::logic_error("empty queue");
         }
-        return m_sorted_queue.cbegin()->second;
+        return *(m_sorted_queue.cbegin()->second.cbegin());
     }
 
     void pop()
     {
+        if(m_sorted_queue.empty())
+        {
+            throw std::logic_error("pop in empty queue");
+        }
         auto iter = m_sorted_queue.begin();
-        if (iter != m_sorted_queue.end())
+        iter->second.pop_front();
+        if(iter->second.empty())
         {
             m_sorted_queue.erase(iter);
         }
+        m_size --;
     }
 
     size_t size() const
     {
-        return m_sorted_queue.size();
+        return m_size;
     }
 
     bool empty() const
@@ -357,27 +362,110 @@ public:
         return size() == 0;
     }
 
-    void emplace(Item&& item)
+    template <class U>
+    void emplace(U&& item)
     {
-        m_sorted_queue.emplace(std::pair{item.score(), std::move(item)});
+        //m_sorted_queue.emplace(std::pair{item.score(), std::move(item)});
+        if (m_sorted_queue.count(item.score()))
+        {
+            m_sorted_queue[item.score()].emplace_back(std::forward<U>(item));
+        }
+        else
+        {
+            std::deque<Item> vec;
+            vec.emplace_back(std::forward<U>(item));
+            m_sorted_queue[item.score()] = std::move(vec);
+        }
+        m_size++;
     }
 
-    void emplace(const Item& item)
-    {
-        m_sorted_queue.emplace(std::pair{item.score(), item});
-    }
 
 private:
-    std::multimap<typename Item::score_type, Item, comp_more<typename Item::score_type>> m_sorted_queue;
+    size_t m_size = 0;
+    //std::multimap<typename Item::score_type, Item, comp_more<typename Item::score_type>> m_sorted_queue;
+    std::map<typename Item::score_type, std::deque<Item>, comp_more<typename Item::score_type>> m_sorted_queue;
 };
 
 /*
-    基于stl multimap实现的优先队列线程池
+    基于stl map + dequeue实现的优先队列线程池
     特点：与std::priority_queue相比，相同score的元素会呈现先进先出的特性，缺点是如果key较多，红黑树相比二叉堆性能有所不足
     可以特化priority_queue_item实现其他类型的score排序
 */
 
 using stable_priority_thread_pool = priority_thread_pool_base<priority_queue_wrap<priority_queue_item<int32_t>, stable_priority_queue<priority_queue_item<int32_t>>>>;
+
+template<class Item, size_t Size, typename = typename std::enable_if_t<std::is_same_v<typename Item::score_type, size_t>>>
+class static_stable_priority_queue
+{
+public:
+    using value_type = Item;
+    //红黑树达到最深节点复杂度log N, 所以选择从头部pop, 这样的话排序需要从大到小排
+    value_type& top()
+    {
+        for(auto iter = m_sorted_queue.rbegin(); iter != m_sorted_queue.rend(); ++iter)
+        {
+            if (!iter->empty())
+            {
+                return iter->front();
+            }
+        }
+        throw std::logic_error("empty queue");
+    }
+    const value_type& top() const
+    {
+        for(auto iter = m_sorted_queue.crbegin(); iter != m_sorted_queue.crend(); ++iter)
+        {
+            if (!iter->empty())
+            {
+                return iter->front();
+            }
+        }
+        throw std::logic_error("empty queue");
+    }
+
+    void pop()
+    {
+        for(auto iter = m_sorted_queue.rbegin(); iter != m_sorted_queue.rend(); ++iter)
+        {
+            if (!iter->empty())
+            {
+                iter->pop_front();
+                m_size --;
+                return;
+            }
+        }
+        throw std::logic_error("empty queue");
+    }
+
+    size_t size() const
+    {
+        return m_size;
+    }
+
+    bool empty() const
+    {
+        return size() == 0;
+    }
+
+    template <class U>
+    void emplace(U&& item)
+    {
+        //m_sorted_queue.emplace(std::pair{item.score(), std::move(item)});
+        m_sorted_queue[item.score()].emplace_back(std::forward<U>(item));
+        m_size++;
+    }
+
+private:
+    size_t m_size = 0;
+    std::array<std::deque<Item>, Size> m_sorted_queue;
+};
+
+/*
+    基于stl array + dequeue实现的优先队列线程池
+    特点：与std::stable_priority_queue相比, 性能更优，但只适合score为size_t且数量较少的场景
+*/
+template <size_t N>
+using static_stable_priority_thread_pool = priority_thread_pool_base<priority_queue_wrap<priority_queue_item<size_t>, static_stable_priority_queue<priority_queue_item<size_t>, N>>>;
 
 template<class Item = std::function<void()>, size_t PoolSize = 1024, class Queue = wish::lockfree_queue<Item, PoolSize>>
 class lockfree_queue_wrap : public queue_wrap<Queue>
@@ -387,12 +475,9 @@ public:
     template<class Duration>
     bool block_pop_item(Item& task, const Duration& duration)
     {
-        if(this->empty())
-        {
-            std::unique_lock<std::mutex> lck(this->m_queue_mtx);
-            this->m_condition.wait_for(lck, duration, [this] () {return !this->empty();});
-            lck.unlock();
-        }
+        std::unique_lock<std::mutex> lck(this->m_queue_mtx);
+        this->m_condition.wait_for(lck, duration, [this] () { return !this->empty();});
+        lck.unlock();
         return this->pop_front(task);
     }
     template<class T>

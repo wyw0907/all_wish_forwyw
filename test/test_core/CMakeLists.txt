@@ -17,3 +17,7 @@ target_link_libraries(test_safe_thread wish pthread dl)
 add_executable(test_thread_lockfree test_thread_lockfree.cpp)
 
 target_link_libraries(test_thread_lockfree wish pthread dl)
+
+add_executable(test_thread_priority test_thread_priority.cpp)
+
+target_link_libraries(test_thread_priority wish pthread dl)
