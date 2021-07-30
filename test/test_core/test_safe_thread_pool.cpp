@@ -68,6 +68,20 @@ int main()
     std::this_thread::sleep_for(3s);
     us->print();
 
+    cnts = 10000;
+    us->counts = 0;
+    wish::safe_thread<UnSafe, wish::lockfree_thread_pool> st3(us);
+    while(cnts -- > 0)
+    {
+        std::thread([&st3, interval, times] () {
+            st3.insert([] (std::shared_ptr<UnSafe> _us, int _interval, int _times) {
+                _us->add(_interval, _times);
+            }, interval, times);
+        }).detach();
+    }
+    std::this_thread::sleep_for(3s);
+    us->print();
+
 
     std::string end = "";
     while(std::cin >> end)

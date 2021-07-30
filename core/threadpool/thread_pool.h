@@ -38,48 +38,33 @@ class thread_pool_base
 public:
     using Item = typename Queue::value_type;
     thread_pool_base(
-        size_t pool_size = 0, 
+        size_t pool_size = std::thread::hardware_concurrency(), 
         const std::string& name = "", 
         std::chrono::milliseconds duration = std::chrono::milliseconds(1000))
     {
-        if (pool_size == 0)
-        {
-            pool_size = std::thread::hardware_concurrency();
-        }
         for (size_t i = 0; i < pool_size; ++i)
         {
             m_workers.emplace_back(std::thread([this, i, name, duration] {
                 std::string thread_name = name.empty() ? "thread_pool_base" : name;
                 set_thread_name(thread_name + "_" + std::to_string(i));
-                try 
+                while(!this->m_stop)
                 {
-                    while(!this->m_stop)
+                    Item task;
+                    if(m_tasks.block_pop_item(task, duration))
                     {
-                        Item task;
-                
-                        if(m_tasks.block_pop_item(task, duration))
+                        if (!this->m_stop)
                         {
-                            if (!this->m_stop)
+                            try 
                             {
-                                try {
-                                    task();
-                                }
-                                catch(const std::exception& e)
-                                {
-                                    std::cout << current_thread_name() << " task exception: " << e.what() << std::endl;
-                                    throw;
-                                }
+                                task();
+                            }
+                            catch(const std::exception& e)
+                            {
+                                std::cerr << "exception: " << e.what() << std::endl;
                             }
                         }
                     }
                 }
-                catch(const std::exception& e)
-                {
-                    std::cout << current_thread_name() << " exception: " << e.what() << std::endl;
-                                                        throw;
-
-                }
-                std::cout << current_thread_name() << " exit. " << std::endl;
             }));
         }
     }
@@ -112,8 +97,6 @@ public:
     {
         if (!m_stop)
         {
-             std::cout << "stop" << std::endl;
-
             m_stop = true;
             m_tasks.exit_block();
         }
@@ -130,19 +113,14 @@ public:
         return m_tasks.push_item(std::move(task));
     }
 
-    size_t size() const
+    size_t task_size() const
     {
         return m_tasks.size();
     }
 
-    size_t nums() const
+    size_t worker_size() const
     {
         return m_workers.size();
-    }
-
-    bool empty() const
-    {
-        return size() == 0;
     }
 
     bool is_stop() const
