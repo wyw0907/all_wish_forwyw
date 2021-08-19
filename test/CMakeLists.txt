@@ -20,3 +20,6 @@ if ( ${GRPC_LIB})
 add_subdirectory(test_grpc)
 add_subdirectory(test_consul)
 endif()
+
+
+add_subdirectory(test_lua)
